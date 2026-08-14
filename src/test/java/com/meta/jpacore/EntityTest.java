@@ -90,8 +90,8 @@ public class EntityTest {
 
             //트랜잭션 커밋
             et.commit();
-            } catch (Exception ex) {
-                throw new RuntimeException(ex);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             } finally {
             em.close();
         }
@@ -108,8 +108,8 @@ public class EntityTest {
             System.out.println("memo.getUsername()=" + memo.getUsername());
             System.out.println("memo.getContents()=" + memo.getContents());
 
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         } finally {
             em.close();
         }
@@ -131,8 +131,8 @@ public class EntityTest {
             System.out.println("memo.getContents()=" + memo1.getContents());
 
 
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         } finally {
             em.close();
         }
@@ -164,8 +164,8 @@ public class EntityTest {
 
             //트랜잭션 커밋
             et.commit();
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         } finally {
             em.close();
         }
@@ -185,8 +185,8 @@ public class EntityTest {
             em.remove(memo);
 //Debuger->em>persist context->EntityEntryContext->persist context->EntityEntryContext->nonEnhancedEntityXref에서 Managed 상태확인
             et.commit();
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         } finally {
             em.close();
         }
@@ -218,8 +218,41 @@ public class EntityTest {
             //트랜잭션 커밋
             et.commit();
             System.out.println("---트랜잭션 commit 후---");
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            em.close();
+        }
+        emf.close();
+    }
+
+    @Test
+    @DisplayName("fluch()매서드 확인")
+    void test9() {
+        EntityTransaction et = em.getTransaction(); // EntityManager 에서 트랜잭션을 가져옴
+
+        et.begin(); //트랜잭션 시작
+
+        try {
+            //저장할 메모 엔터티 객체 생성
+            Memo memo1 = new Memo();
+            memo1.setId(26L);
+            memo1.setUsername("김메타26");
+            memo1.setContents("flush 매서드 호출 확인");
+            em.persist(memo1);
+
+            System.out.println("---flush() 전---");
+            em.flush();
+
+            System.out.println("---flush() 후---");
+
+            System.out.println("---트랜잭션 commit 전---");
+            //트랜잭션 커밋
+            et.commit();
+            System.out.println("---트랜잭션 commit 후---");
+        } catch (Exception e) {
+            et.rollback();
+            throw new RuntimeException(e);
         } finally {
             em.close();
         }
