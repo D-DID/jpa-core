@@ -5,9 +5,11 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.Persistence;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.transaction.annotation.Propagation;
 
 import java.sql.SQLOutput;
 
@@ -263,6 +265,7 @@ public class EntityTest {
 
 
     @Test
+   //@Transactional(Propagation = Propagation.REQUIRED) 본서비스 가면 꼭해야함
     @DisplayName("변경 감지 DIrty Checking")
     void test10() {
         EntityTransaction et = em.getTransaction(); // EntityManager 에서 트랜잭션을 가져옴
