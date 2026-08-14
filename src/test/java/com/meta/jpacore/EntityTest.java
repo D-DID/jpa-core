@@ -9,6 +9,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.sql.SQLOutput;
+
 public class EntityTest {
 
     EntityManagerFactory emf;
@@ -259,5 +261,36 @@ public class EntityTest {
         emf.close();
     }
 
+
+    @Test
+    @DisplayName("변경 감지 DIrty Checking")
+    void test10() {
+        EntityTransaction et = em.getTransaction(); // EntityManager 에서 트랜잭션을 가져옴
+
+        et.begin(); //트랜잭션 시작
+
+        try {
+            //저장할 메모 엔터티 객체 생성
+            Memo memo1 = em.find(Memo.class,26L);
+            System.out.println("memo1.getId() = " + memo1.getId());
+            System.out.println("memo1.getUsername() = " + memo1.getUsername());
+            System.out.println("memo1.getContents() = " + memo1.getContents());
+
+            System.out.println("\n수정을 진행합니다.");
+            memo1.setUsername("김수정");
+            memo1.setContents("변경 감지 확인");
+
+            System.out.println("---트랜잭션 commit 전---");
+            //트랜잭션 커밋
+            et.commit();
+            System.out.println("---트랜잭션 commit 후---");
+        } catch (Exception e) {
+            et.rollback();
+            throw new RuntimeException(e);
+        } finally {
+            em.close();
+        }
+        emf.close();
+    }
 }
 
