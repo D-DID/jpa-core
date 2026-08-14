@@ -2,9 +2,13 @@ package com.meta.jpacore.entity;
 
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name="memo")
+@Getter
+@Setter
 public class Memo {
     @Id
 //    @GeneratedValue(strategy = GenerationType.IDENTITY) //잠시해제
