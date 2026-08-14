@@ -15,14 +15,14 @@ public class EntityTest {
     EntityManager em;
 
     @BeforeEach
-    void setUp(){
-        emf=Persistence.createEntityManagerFactory("memo");
-        em=emf.createEntityManager();
+    void setUp() {
+        emf = Persistence.createEntityManagerFactory("memo");
+        em = emf.createEntityManager();
     }
 
     @Test
     @DisplayName("EntityTransaction 성공테스트")
-    void test1(){
+    void test1() {
         EntityTransaction et = em.getTransaction(); // EntityManager 에서 트랜잭션을 가져옴
 
         et.begin(); //트랜잭션 시작
@@ -35,8 +35,8 @@ public class EntityTest {
 
             em.persist(memo); //EM이 memo 객체 를 영속성 컨텍스트에 저장/
 
-            et.commit();//오류가 바생하지 않고 정상이라면ㄷ, Commit(쿼리 수랭)을 수행
-        } catch(Exception e) {
+            et.commit();//오류가 발생하지 않고 정상이라면, Commit(쿼리 수행)을 수행
+        } catch (Exception e) {
             e.printStackTrace();
             et.rollback();
         } finally {
@@ -47,7 +47,7 @@ public class EntityTest {
 
     @Test
     @DisplayName("EntityTransaction 실패 테스트")
-    void test2(){
+    void test2() {
         EntityTransaction et = em.getTransaction(); // EntityManager 에서 트랜잭션을 가져옴
 
         et.begin(); //트랜잭션 시작
@@ -60,8 +60,8 @@ public class EntityTest {
 
             em.persist(memo); //EM이 memo 객체 를 영속성 컨텍스트에 저장/
 
-            et.commit();//오류가 바생하지 않고 정상이라면, Commit(쿼리 수랭)을 수행
-        } catch(Exception e) {
+            et.commit();//오류가 발생하지 않고 정상이라면, Commit(쿼리 수행)을 수행
+        } catch (Exception e) {
             System.out.println("식별자 값을 넣어주지 않아 오류가 발생하였습니다.");
             e.printStackTrace();
             et.rollback();
@@ -69,6 +69,128 @@ public class EntityTest {
             em.close();
         }
         emf.close();
+    }
 
+    @Test
+    @DisplayName("1차 캐시 : Entity 저장")
+    void test3() {
+        EntityTransaction et = em.getTransaction(); // EntityManager 에서 트랜잭션을 가져옴
+
+        et.begin(); //트랜잭션 시작
+    //Ctrl +alt+T-> try catch finally
+        try {
+            //저장할 메모 엔터티 객체 생성
+            Memo memo = new Memo();
+            memo.setId(10L);
+            memo.setUsername("김메타10");
+            memo.setContents("1차 캐시 Entity 저장");
+
+            //EM이 memo 객체 를 영속성 컨텍스트에 관리
+            em.persist(memo);
+
+            //트랜잭션 커밋
+            et.commit();
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            } finally {
+            em.close();
+        }
+        emf.close();
+    }
+
+    @Test
+    @DisplayName("1차 캐시 : 캐시 저장소에 해당하는 Id 가 존재하지 않는 경우")
+    void test4() {
+        try {
+            //저장할 메모 엔터티 객체 생성
+            Memo memo = em.find(Memo.class, 11L);
+            System.out.println("memo.getId()=" + memo.getId());
+            System.out.println("memo.getUsername()=" + memo.getUsername());
+            System.out.println("memo.getContents()=" + memo.getContents());
+
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        } finally {
+            em.close();
+        }
+        emf.close();
+    }
+
+    @Test
+    @DisplayName("1차 캐시 : 캐시 저장소에 해당하는 Id 가 존재하는 경우")
+    void test5() {
+        try {
+            //저장할 메모 엔터티 객체 생성
+            Memo memo1 = em.find(Memo.class, 10L);
+            Memo memo2 = em.find(Memo.class, 10L);
+    //다른 메모리를 사용하는 변수를 지정하더라도 위 2개 엔티티는 같은 객체를 바라봄.
+            System.out.println("memo1 == memo2 : " + (memo1 == memo2)); //true
+
+            System.out.println("memo.getId()=" + memo1.getId());
+            System.out.println("memo.getUsername()=" + memo1.getUsername());
+            System.out.println("memo.getContents()=" + memo1.getContents());
+
+
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        } finally {
+            em.close();
+        }
+        emf.close();
+    }
+
+    @Test
+    @DisplayName("객체 동일성 보장 확인")
+    void test6() {
+        EntityTransaction et = em.getTransaction(); // EntityManager 에서 트랜잭션을 가져옴
+
+        et.begin(); //트랜잭션 시작
+        //Ctrl +alt+T-> try catch finally
+        try {
+            //저장할 메모 엔터티 객체 생성
+            Memo memo3 = new Memo();
+            memo3.setId(23L);
+            memo3.setUsername("김메타23");
+            memo3.setContents("객체동일성 보장");
+
+            //EM이 memo 객체 를 영속성 컨텍스트에 관리
+            em.persist(memo3);
+            Memo memo0 = em.find(Memo.class, 23L);
+
+            Memo memo1 = em.find(Memo.class, 10L);
+
+            System.out.println(memo3 == memo0); //true
+            System.out.println(memo1 == memo0); //false
+
+            //트랜잭션 커밋
+            et.commit();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        } finally {
+            em.close();
+        }
+        emf.close();
+    }
+
+    @Test
+    @DisplayName("1차 캐에서의 엔터티 삭제")
+    void test7() {
+        EntityTransaction et = em.getTransaction(); // EntityManager 에서 트랜잭션을 가져옴
+
+        et.begin(); //트랜잭션 시작
+        //Ctrl +alt+T-> try catch finally
+        try {
+            Memo memo = em.find(Memo.class, 23L);
+
+            em.remove(memo);
+//Debuger->em>persist context->EntityEntryContext->persist context->EntityEntryContext->nonEnhancedEntityXref에서 Managed 상태확인
+            et.commit();
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        } finally {
+            em.close();
+        }
+        emf.close();
     }
 }
+
